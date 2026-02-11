@@ -1,8 +1,9 @@
 # Society Management System
 
-**Deployment URL:** https://harsh9702.pythonanywhere.com <!-- Update this with the actual deployment UrL once hosted -->
+**Deployment URL:** https://harsh9702.pythonanywhere.com  
+[SMTP Email for user credentials are blocked on free tier Pythonanywhere account but the code is perfect]<!-- Update this with the actual deployment UrL once hosted -->
 ## Default Credentials
-Email: admin1@gmail.com
+Email: admin1@gmail.com  
 Password: admin123 
 
 ## Overview
@@ -78,7 +79,7 @@ pip install -r requirements.txt
 4. **Configure Environment Variables**:
 - Create a `.env` file in the project root.
 - Add the following (replace with your Gmail credentials for email functionality):
-EMAIL_HOST_USER=your.email@gmail.com
+EMAIL_HOST_USER=your.email@gmail.com  
 EMAIL_HOST_PASSWORD=your-app-password
 DEFAULT_FROM_EMAIL=your.email@gmail.com
 - Note: For production, use secure app passwords and avoid committing `.env` to version control.
