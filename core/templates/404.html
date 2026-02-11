@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Unit Not Found | SocietyConnect</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --accent: #f59e0b;
+            --dark-bg: #0f172a;
+            --building-color: #1e293b;
+            --window-on: #fbbf24;
+            --window-off: #334155;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            color: white;
+            overflow: hidden; /* Prevent scrollbars for the immersive feel */
+            cursor: none; /* Custom cursor */
+        }
+
+        /* Custom Cursor Spotlight */
+        #cursor-light {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10;
+            mix-blend-mode: screen;
+            transition: transform 0.1s ease;
+        }
+
+        #cursor-dot {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 50;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* Background Grid */
+        .grid-bg {
+            background-image: 
+                linear-gradient(rgba(30, 41, 59, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
+            background-size: 50px 50px;
+            perspective: 500px;
+            transform-style: preserve-3d;
+            animation: moveGrid 20s linear infinite;
+        }
+
+        @keyframes moveGrid {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
+        }
+
+        /* Glitch Effect for 404 Text */
+        .glitch-text {
+            position: relative;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+        }
+        
+        .glitch-text::before,
+        .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -1px 0 #ff00c1;
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: -1px 0 #00fff9;
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 30px, 0); }
+            20% { clip: rect(80px, 9999px, 100px, 0); }
+            40% { clip: rect(10px, 9999px, 50px, 0); }
+            60% { clip: rect(90px, 9999px, 120px, 0); }
+            80% { clip: rect(20px, 9999px, 60px, 0); }
+            100% { clip: rect(60px, 9999px, 90px, 0); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(60px, 9999px, 90px, 0); }
+            20% { clip: rect(10px, 9999px, 40px, 0); }
+            40% { clip: rect(50px, 9999px, 80px, 0); }
+            60% { clip: rect(20px, 9999px, 50px, 0); }
+            80% { clip: rect(90px, 9999px, 110px, 0); }
+            100% { clip: rect(30px, 9999px, 60px, 0); }
+        }
+
+        /* Buildings */
+        .skyline {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 10px;
+            height: 300px;
+            width: 110%; /* Parallax buffer */
+            margin-left: -5%;
+            filter: drop-shadow(0 0 15px rgba(0,0,0,0.5));
+            transition: transform 0.1s ease-out;
+        }
+
+        .building {
+            background: var(--building-color);
+            width: 60px;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            padding: 5px;
+            gap: 4px;
+            border-top: 2px solid rgba(255,255,255,0.1);
+            border-left: 1px solid rgba(255,255,255,0.05);
+            transition: height 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            height: 0; /* Animated on load */
+        }
+
+        .window {
+            width: 8px;
+            height: 12px;
+            background: var(--window-off);
+            border-radius: 1px;
+            transition: background 2s;
+        }
+
+        .window.lit {
+            background: var(--window-on);
+            box-shadow: 0 0 5px var(--window-on);
+        }
+
+        .window.blue {
+            background: #60a5fa;
+            box-shadow: 0 0 5px #60a5fa;
+        }
+
+        /* Radar Animation */
+        .radar-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .radar-sweep {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 270deg, rgba(59, 130, 246, 0.1) 360deg);
+            animation: radarSpin 4s linear infinite;
+        }
+
+        .radar-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 1px dashed rgba(59, 130, 246, 0.2);
+            animation: pulseRing 3s ease-out infinite;
+        }
+
+        @keyframes radarSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulseRing {
+            0% { width: 0; height: 0; opacity: 1; }
+            100% { width: 100%; height: 100%; opacity: 0; }
+        }
+
+        /* Drone Animation */
+        .drone {
+            position: absolute;
+            font-size: 2rem;
+            color: var(--accent);
+            z-index: 20;
+            filter: drop-shadow(0 0 10px var(--accent));
+            animation: droneFloat 6s ease-in-out infinite;
+        }
+
+        .drone-light {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 60px solid rgba(245, 158, 11, 0.2);
+            animation: scanLight 3s ease-in-out infinite;
+        }
+
+        @keyframes droneFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(20px, -20px) rotate(5deg); }
+            50% { transform: translate(-10px, 10px) rotate(-3deg); }
+            75% { transform: translate(-25px, -10px) rotate(2deg); }
+        }
+
+        @keyframes scanLight {
+            0%, 100% { opacity: 0.2; transform: translateX(-50%) scaleX(1); }
+            50% { opacity: 0.4; transform: translateX(-50%) scaleX(1.2); }
+        }
+
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            from { transform: translateY(100vh); opacity: 0; }
+            50% { opacity: 0.5; }
+            to { transform: translateY(-10vh); opacity: 0; }
+        }
+
+        /* Responsive Text Sizing */
+        @media (max-width: 640px) {
+            .glitch-text { font-size: 6rem; }
+            .skyline { height: 150px; }
+            .building { width: 30px; gap: 2px; padding: 2px; }
+            .window { width: 6px; height: 8px; }
+            .drone { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between relative">
+
+    <!-- Custom Cursor -->
+    <div id="cursor-light"></div>
+    <div id="cursor-dot"></div>
+
+    <!-- Background Elements -->
+    <div class="absolute inset-0 grid-bg opacity-20 -z-10"></div>
+    
+    <!-- Radar & Particles -->
+    <div class="radar-container">
+        <div class="radar-sweep"></div>
+        <div class="radar-ring" style="width: 30%; height: 30%;"></div>
+        <div class="radar-ring" style="width: 60%; height: 60%; animation-delay: 1s;"></div>
+        <div class="radar-ring" style="width: 90%; height: 90%; animation-delay: 2s;"></div>
+    </div>
+
+    <!-- Drone -->
+    <div class="drone" style="top: 20%; right: 20%;">
+        <i class="fa-solid fa-robot"></i>
+        <div class="drone-light"></div>
+    </div>
+    
+    <!-- Second Drone (Blurrier/Smaller) -->
+    <div class="drone" style="top: 60%; left: 10%; font-size: 1rem; animation-delay: 1s; opacity: 0.6; filter: blur(1px);">
+        <i class="fa-solid fa-robot"></i>
+    </div>
+
+    <!-- Navbar Area (Simulated) -->
+    <nav class="w-full p-6 flex justify-between items-center z-30">
+        <div class="flex items-center gap-2 text-blue-400">
+            <i class="fa-solid fa-building-shield text-2xl"></i>
+            <span class="font-bold text-xl tracking-wider text-white">Society <span class="text-blue-500">MGMT</span></span>
+        </div>
+        <a href="#" class="text-sm text-gray-400 hover:text-white transition-colors">
+            <i class="fa-solid fa-life-ring mr-1"></i> Support
+        </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="relative z-30 flex flex-col items-center justify-center flex-grow text-center px-4">
+        
+        <div class="relative mb-6">
+            <h1 class="text-9xl md:text-[12rem] text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 glitch-text leading-none select-none" data-text="404">
+                404
+            </h1>
+            <div class="absolute -top-4 -right-8 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded shadow-lg animate-bounce">
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i> UNIT MISSING
+            </div>
+        </div>
+
+        <h2 class="text-2xl md:text-4xl font-light mb-4 text-blue-100">
+            Sector Not Found
+        </h2>
+        
+        <p class="text-gray-400 max-w-md mb-8 leading-relaxed">
+            The requested unit, block, or amenity could not be located in our digital complex. It may have been demolished or restricted.
+        </p>
+
+        <!-- Terminal Status Output -->
+        <div class="mt-12 font-mono text-xs text-green-500/80 bg-black/40 p-4 rounded border border-green-500/20 text-left w-full max-w-md backdrop-blur-sm">
+            <p>> SYSTEM_DIAGNOSTIC_TOOL_V2.1</p>
+            <p>> SCANNING_GRID... [COMPLETE]</p>
+            <p>> ERROR: TARGET_URL_UNDEFINED</p>
+            <p>> STATUS: <span class="animate-pulse">WAITING_FOR_USER_INPUT_</span></p>
+        </div>
+
+    </main>
+
+    <!-- City Skyline Bottom -->
+    <div class="w-full overflow-hidden relative z-20 mt-auto">
+        <div class="skyline" id="skyline">
+            <!-- Buildings generated by JS -->
+        </div>
+        <!-- Ground Gradient -->
+        <div class="h-24 bg-gradient-to-t from-slate-900 to-transparent absolute bottom-0 w-full pointer-events-none"></div>
+    </div>
+
+    <script>
+        // 1. Generate City Skyline Dynamically
+        const skyline = document.getElementById('skyline');
+        const buildingCount = Math.floor(window.innerWidth / 40); // Responsive count
+
+        function createBuildings() {
+            skyline.innerHTML = '';
+            for (let i = 0; i < buildingCount; i++) {
+                const height = Math.floor(Math.random() * 200) + 50; // Random height
+                const width = Math.floor(Math.random() * 40) + 40;  // Random width
+                const building = document.createElement('div');
+                building.classList.add('building');
+                building.style.height = '0px'; // Start at 0 for animation
+                building.style.width = width + 'px';
+                
+                // Add windows
+                const windowCount = Math.floor((height * width) / 200);
+                for (let j = 0; j < windowCount; j++) {
+                    const win = document.createElement('div');
+                    win.classList.add('window');
+                    // Randomly light up windows
+                    if (Math.random() > 0.7) {
+                        win.classList.add('lit');
+                        // Occasional blue "server room" window
+                        if(Math.random() > 0.9) win.classList.add('blue');
+                    }
+                    building.appendChild(win);
+                }
+
+                skyline.appendChild(building);
+                
+                // Animate height after small delay
+                setTimeout(() => {
+                    building.style.height = height + 'px';
+                }, i * 50 + 100);
+            }
+        }
+
+        createBuildings();
+        window.addEventListener('resize', () => {
+             // Debounce re-creation
+             clearTimeout(window.resizeTimer);
+             window.resizeTimer = setTimeout(createBuildings, 200);
+        });
+
+        // 2. Window Blink Effect
+        setInterval(() => {
+            const windows = document.querySelectorAll('.window.lit');
+            if(windows.length > 0) {
+                const randomWin = windows[Math.floor(Math.random() * windows.length)];
+                randomWin.classList.toggle('lit');
+                setTimeout(() => randomWin.classList.toggle('lit'), 200); // Flicker back
+            }
+        }, 500);
+
+        // 3. Custom Cursor & Spotlight Logic
+        const cursorLight = document.getElementById('cursor-light');
+        const cursorDot = document.getElementById('cursor-dot');
+        const buildingsContainer = document.querySelector('.skyline');
+
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX;
+            const y = e.clientY;
+
+            // Move cursor elements
+            cursorLight.style.left = x + 'px';
+            cursorLight.style.top = y + 'px';
+            cursorDot.style.left = x + 'px';
+            cursorDot.style.top = y + 'px';
+
+            // Parallax Effect for Buildings
+            const moveX = (window.innerWidth / 2 - x) * 0.02; // Small movement
+            buildingsContainer.style.transform = `translateX(${moveX}px)`;
+        });
+
+        // 4. Background Particles
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            const size = Math.random() * 3;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.animationDuration = Math.random() * 10 + 5 + 's';
+            
+            document.body.appendChild(particle);
+
+            // Cleanup
+            setTimeout(() => {
+                particle.remove();
+            }, 15000);
+        }
+
+        setInterval(createParticle, 500);
+
+    </script>
+</body>
+</html>
