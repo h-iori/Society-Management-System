@@ -1,6 +1,9 @@
 # Society Management System
 
-**Deployment URL:** [Placeholder - Insert Live Demo URL Here](https://example.com) <!-- Update this with the actual deployment URL once hosted -->
+**Deployment URL:** https://harsh9702.pythonanywhere.com <!-- Update this with the actual deployment UrL once hosted -->
+## Default Credentials
+Email: admin1@gmail.com
+Password: admin123 
 
 ## Overview
 
