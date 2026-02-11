@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+    {# Define URLs #}
+    {% url 'core:tenant_dashboard' as dash_url %}
+    {% url 'core:tenant_flat' as flat_url %}
+
+    {# Dashboard Link #}
+    <a href="{{ dash_url }}" class="menu-item {% if request.path == dash_url %}active{% endif %}">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+    </a>
+
+    {# My Flat Link #}
+    <a href="{{ flat_url }}" class="menu-item {% if flat_url in request.path %}active{% endif %}">
+        <i class="fas fa-home"></i>
+        <span>My Flat</span>
+    </a>
+{% endblock %}

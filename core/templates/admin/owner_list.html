@@ -1,0 +1,247 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Owners Management{% endblock %}
+{% block page_title %}OWNERS MANAGEMENT{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Custom Alert Styling for Enterprise Feel */
+    .alert-custom {
+        border-left: 4px solid;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .alert-success { border-left-color: var(--success); background-color: rgba(40, 167, 69, 0.1); color: var(--success); }
+    .alert-error, .alert-danger { border-left-color: var(--danger); background-color: rgba(220, 53, 69, 0.1); color: var(--danger); }
+    .alert-warning { border-left-color: var(--warning); background-color: rgba(255, 193, 7, 0.1); color: #856404; }
+    .alert-info { border-left-color: var(--info); background-color: rgba(23, 162, 184, 0.1); color: var(--info); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+
+{# ================= END MESSAGE BLOCK ================= #}
+
+<div class="row mb-3 mb-md-4 align-items-center">
+    <div class="col-12 col-md-6 mb-3 mb-md-0">
+        <h4 style="margin: 0; font-weight: 700;">Owner Directory</h4>
+        <div style="color: var(--text-secondary); font-size: 0.9rem;">Manage user access and details</div>
+    </div>
+    <div class="col-12 col-md-6 text-md-end">
+        <button class="btn btn-primary w-100 w-md-auto" data-bs-toggle="modal" data-bs-target="#createOwnerModal">
+            <i class="fas fa-plus me-2"></i>New Owner
+        </button>
+    </div>
+</div>
+
+<div class="card" style="overflow: hidden; border-radius: 12px;">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>User Profile</th>
+                    <th>Contact Info</th>
+                    <th>Role & Status</th>
+                    <th>Joined</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for owner in owners %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-initials me-3">
+                                {{ owner.first_name.0|default:"U"|upper }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">{{ owner.get_full_name|default:owner.username }}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary);">@{{ owner.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="color: var(--text-primary);">{{ owner.email }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ owner.phone|default:"No phone" }}</div>
+                    </td>
+                    <td>
+                        {% if owner.is_active %}
+                            <span style="color: var(--success); font-size: 0.9rem; font-weight: 500;">
+                                <span class="status-dot status-active"></span>Active
+                            </span>
+                        {% else %}
+                            <span style="color: var(--danger); font-size: 0.9rem; font-weight: 500;">
+                                <span class="status-dot status-inactive"></span>Inactive
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td style="color: var(--text-secondary);">
+                        {{ owner.date_joined|date:"M d, Y" }}
+                    </td>
+                    <td class="text-end">
+                        <button class="action-btn" onclick="toggleStatus({{ owner.pk }}, '{% if owner.is_active %}deactivate{% else %}activate{% endif %}')" title="Toggle Status">
+                            <i class="fas fa-power-off"></i>
+                        </button>
+                        
+                        <button class="action-btn" 
+                                onclick="openEditModal('{{ owner.pk }}', '{{ owner.first_name }}', '{{ owner.last_name }}', '{{ owner.email }}', '{{ owner.phone|default:'' }}', '{{ owner.username }}')" 
+                                title="Edit Owner">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+
+                        <button class="action-btn btn-delete" onclick="deleteOwner({{ owner.pk }})" title="Delete Owner">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <i class="fas fa-users mb-3" style="font-size: 2rem; color: var(--border);"></i>
+                        <div style="color: var(--text-secondary);">No owners found in the system.</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="createOwnerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Owner</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'core:create_owner' %}">
+                {% csrf_token %}
+                <div class="modal-body p-3 p-md-4">
+                    <div class="row g-3">
+                        <div class="col-12"><h6 style="color: var(--accent); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Personal Information</h6></div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" name="first_name" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" name="last_name" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-control" name="phone">
+                        </div>
+
+                        <div class="col-12 mt-4"><h6 style="color: var(--accent); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Account Credentials</h6></div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" name="username" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border: 1px solid var(--border); color: var(--text-secondary);">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editOwnerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Owner Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id="editOwnerForm">
+                {% csrf_token %}
+                <div class="modal-body p-3 p-md-4">
+                    <div class="row g-3">
+                        <div class="col-12"><h6 style="color: var(--accent); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Personal Information</h6></div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" name="first_name" id="edit_first_name" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" name="last_name" id="edit_last_name" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" id="edit_email" readonly 
+                                style="background-color: rgba(255, 255, 255, 0.05); cursor: not-allowed; color: var(--text-secondary) !important;">
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                                <i class="fas fa-lock me-1"></i> Email cannot be changed
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-control" name="phone" id="edit_phone">
+                        </div>
+
+                        <div class="col-12 mt-4"><h6 style="color: var(--accent); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Account Credentials</h6></div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" name="username" id="edit_username" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">New Password</label>
+                            <input type="password" class="form-control" name="password" placeholder="Leave blank to keep current">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border: 1px solid var(--border); color: var(--text-secondary);">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Owner</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleStatus(id, action) {
+        if(confirm('Are you sure you want to ' + action + ' this user?')) {
+            window.location.href = `/admin/owner/${id}/toggle-status/`;
+        }
+    }
+
+    function deleteOwner(id) {
+        if(confirm('Are you sure you want to DELETE this owner? This action cannot be undone.')) {
+            window.location.href = `/admin/owner/${id}/delete/`;
+        }
+    }
+
+    function openEditModal(id, fname, lname, email, phone, username) {
+        document.getElementById('edit_first_name').value = fname;
+        document.getElementById('edit_last_name').value = lname;
+        document.getElementById('edit_email').value = email;
+        document.getElementById('edit_phone').value = phone;
+        document.getElementById('edit_username').value = username;
+
+        const form = document.getElementById('editOwnerForm');
+        form.action = `/admin/owner/${id}/update/`;
+
+        var editModal = new bootstrap.Modal(document.getElementById('editOwnerModal'));
+        editModal.show();
+    }
+</script>
+{% endblock %}

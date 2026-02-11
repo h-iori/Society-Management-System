@@ -1,0 +1,96 @@
+{% extends 'tenantbase.html' %}
+
+{% block title %}My Flat Details | Society Management{% endblock %}
+{% block page_title %}MY FLAT{% endblock %}
+
+
+{% block content %}
+{% if tenant %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-building me-2 text-info"></i>PROPERTY & LEASE DETAILS
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-5">
+                    <div class="col-md-6">
+                        <h6 style="color: var(--accent); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1.5rem;">
+                            Property Information
+                        </h6>
+                        
+                        <div class="mb-4">
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.25rem;">Residence</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">{{ society.name }}</div>
+                            <div style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.9rem;">
+                                <i class="fas fa-map-pin me-2" style="color: var(--danger);"></i>{{ society.address }}
+                            </div>
+                        </div>
+                        
+                        <div class="p-3" style="background: var(--primary); border: 1px solid var(--border); border-radius: 8px;">
+                            <div class="d-flex align-items-center">
+                                <div style="width: 40px; height: 40px; background: rgba(0, 212, 255, 0.1); color: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                                    <i class="fas fa-door-open"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Unit Number</div>
+                                    <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary);">{{ flat.flat_number }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6" style="border-left: 1px solid var(--border);">
+                        <h6 style="color: var(--accent); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1.5rem;">
+                            Lease Agreement
+                        </h6>
+                        
+                        <div class="mb-4">
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">Landlord Details</div>
+                            <div class="d-flex align-items-center">
+                                <div style="width: 35px; height: 35px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; font-weight: 700; color: var(--text-primary);">
+                                    {{ owner.first_name.0|upper }}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--text-primary);">{{ owner.get_full_name }}</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ owner.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="p-3" style="background: rgba(0, 227, 150, 0.1); border: 1px solid rgba(0, 227, 150, 0.2); border-radius: 8px;">
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Monthly Rent</div>
+                                    <div style="font-weight: 700; color: var(--success); font-size: 1.25rem;">₹{{ tenant.rent_amount }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3" style="background: var(--primary); border: 1px solid var(--border); border-radius: 8px;">
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Lease Start</div>
+                                    <div style="font-weight: 600; color: var(--text-primary);">{{ tenant.start_date|date:"M d, Y" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-warning d-flex align-items-center" style="background: rgba(255, 165, 2, 0.1); border-color: var(--warning); color: var(--warning);">
+            <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
+            <div>
+                <strong>No Flat Assigned</strong><br>
+                You are currently not assigned to any flat. Please contact the administrator.
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

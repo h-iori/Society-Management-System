@@ -1,0 +1,85 @@
+{% extends 'owner_base.html' %}
+
+{% block title %}My Bills | Society Management{% endblock %}
+{% block page_title %}MY BILLS{% endblock %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3 mb-md-4 align-items-center fade-in">
+    <div class="col-12 col-md-6 mb-3 mb-md-0">
+        <h4 style="font-weight: 700; margin: 0;">Bill History</h4>
+        <div style="color: var(--text-secondary); font-size: 0.9rem;">Track maintenance payments and dues</div>
+    </div>
+    
+    <div class="col-12 col-md-6">
+        <div class="btn-group w-100 w-md-auto float-md-end" role="group">
+            <a href="{% url 'core:owner_bills' %}" class="btn {% if not status_filter %}active{% endif %}">All</a>
+            <a href="{% url 'core:owner_bills' %}?status=PAID" class="btn {% if status_filter == 'PAID' %}active{% endif %}">Paid</a>
+            <a href="{% url 'core:owner_bills' %}?status=UNPAID" class="btn {% if status_filter == 'UNPAID' %}active{% endif %}">Unpaid</a>
+        </div>
+    </div>
+</div>
+
+<div class="card fade-in" style="overflow: hidden; border-radius: 12px;">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Bill Period</th>
+                    <th>Property Info</th>
+                    <th>Amount</th>
+                    <th>Payment Status</th>
+                    <th class="text-end">Generated Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bill in bills %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div style="width: 40px; height: 40px; background: rgba(0, 212, 255, 0.1); color: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 1rem; flex-shrink: 0;">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">{{ bill.get_month_display }}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ bill.year }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">Flat {{ bill.flat.flat_number }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ bill.flat.society.name }}</div>
+                    </td>
+                    <td>
+                        <div style="font-family: monospace; font-size: 1rem; color: var(--text-primary); font-weight: 600;">₹{{ bill.amount }}</div>
+                    </td>
+                    <td>
+                        {% if bill.status == 'PAID' %}
+                            <span style="color: var(--success); font-size: 0.9rem; font-weight: 500;">
+                                <span class="status-dot status-paid"></span>PAID
+                            </span>
+                        {% else %}
+                            <span style="color: var(--warning); font-size: 0.9rem; font-weight: 500;">
+                                <span class="status-dot status-unpaid"></span>PENDING
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end" style="color: var(--text-secondary);">
+                        {{ bill.created_at|date:"d M, Y" }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <i class="fas fa-file-invoice mb-3" style="font-size: 2rem; color: var(--border);"></i>
+                        <div style="color: var(--text-secondary);">No bills found matching your filter.</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

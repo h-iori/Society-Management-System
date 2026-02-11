@@ -1,0 +1,295 @@
+{% extends 'owner_base.html' %}
+
+{% block title %}My Tenants | Society Management{% endblock %}
+{% block page_title %}TENANT MANAGEMENT{% endblock %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3 mb-md-4 align-items-center">
+    <div class="col-12 col-md-6 mb-3 mb-md-0">
+        <h4 style="margin: 0; font-weight: 700;">Active Tenants</h4>
+        <div style="color: var(--text-secondary); font-size: 0.9rem;">Manage rentals and lease details</div>
+    </div>
+    <div class="col-12 col-md-6 text-md-end">
+        <button class="btn btn-primary w-100 w-md-auto" data-bs-toggle="modal" data-bs-target="#createTenantModal">
+            <i class="fas fa-user-plus me-2"></i>New Tenant
+        </button>
+    </div>
+</div>
+
+<div class="card" style="overflow: hidden; border-radius: 12px;">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Tenant Profile</th>
+                    <th>Residence Info</th>
+                    <th>Financials</th>
+                    <th>Lease Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tenant in tenants %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-initials me-3">
+                                {{ tenant.user.first_name.0|default:"T"|upper }}{{ tenant.user.last_name.0|default:""|upper }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">{{ tenant.user.get_full_name }}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ tenant.user.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600; color: var(--text-primary);">Flat {{ tenant.flat.flat_number }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ tenant.flat.society.name }}</div>
+                    </td>
+                    <td>
+                        <div style="font-family: monospace; font-size: 0.95rem; color: var(--accent);">₹{{ tenant.rent_amount }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Monthly Rent</div>
+                    </td>
+                    <td>
+                        {% if tenant.is_active %}
+                            <span style="color: var(--success); font-size: 0.9rem; font-weight: 500;">
+                                <span class="status-dot status-active"></span>Active
+                            </span>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">Since {{ tenant.start_date|date:"M d, Y" }}</div>
+                        {% else %}
+                            <span style="color: var(--danger); font-size: 0.9rem; font-weight: 500;">
+                                <span class="status-dot status-inactive"></span>Inactive
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <button class="action-btn text-primary" 
+                                onclick="openEditModal(this)"
+                                data-id="{{ tenant.pk }}"
+                                data-first-name="{{ tenant.user.first_name }}"
+                                data-last-name="{{ tenant.user.last_name }}"
+                                data-email="{{ tenant.user.email }}"
+                                data-phone="{{ tenant.user.phone|default:'' }}"
+                                data-username="{{ tenant.user.username }}"
+                                data-flat-id="{{ tenant.flat.id }}"
+                                data-rent="{{ tenant.rent_amount }}"
+                                data-start-date="{{ tenant.start_date|date:'Y-m-d' }}"
+                                title="Edit Details">
+                            <i class="fas fa-edit"></i>
+                        </button>
+
+                        <button class="action-btn" onclick="toggleStatus({{ tenant.pk }}, '{% if tenant.is_active %}deactivate{% else %}activate{% endif %}')" title="{% if tenant.is_active %}Deactivate{% else %}Activate{% endif %} Tenant">
+                            <i class="fas fa-{% if tenant.is_active %}ban{% else %}check{% endif %}"></i>
+                        </button>
+
+                        <button class="action-btn text-danger" onclick="deleteTenant({{ tenant.pk }})" title="Delete Tenant">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        
+                        <form id="delete-form-{{ tenant.pk }}" action="{% url 'core:delete_tenant' tenant.pk %}" method="POST" style="display: none;">
+                            {% csrf_token %}
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <i class="fas fa-users-slash mb-3" style="font-size: 2rem; color: var(--border);"></i>
+                        <div style="color: var(--text-secondary);">No tenants found. Add one to get started.</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="createTenantModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Register New Tenant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'core:create_tenant' %}">
+                {% csrf_token %}
+                <div class="modal-body p-3 p-md-4">
+                    <div class="row g-3">
+                        <div class="col-12"><h6 style="color: var(--accent); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Tenant Information</h6></div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="first_name" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="last_name" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Mobile Number</label>
+                            <input type="tel" class="form-control" name="phone">
+                        </div>
+
+                        <div class="col-12 mt-3 mt-md-4"><h6 style="color: var(--accent); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Login Credentials</h6></div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="username" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Password <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+
+                        <div class="col-12 mt-3 mt-md-4"><h6 style="color: var(--accent); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Lease Details</h6></div>
+
+                        <div class="col-12">
+                            <label class="form-label">Assign Flat <span class="text-danger">*</span></label>
+                            <select class="form-select" name="flat" required>
+                                <option value="">-- Select Property --</option>
+                                {% for flat in my_flats %}
+                                <option value="{{ flat.id }}">{{ flat.society.name }} - Flat {{ flat.flat_number }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Monthly Rent (₹) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="rent_amount" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Lease Start Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="start_date" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border: 1px solid var(--border); color: var(--text-secondary);">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Tenant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editTenantModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Tenant Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id="editTenantForm" action="">
+                {% csrf_token %}
+                <div class="modal-body p-3 p-md-4">
+                    <div class="row g-3">
+                        <div class="col-12"><h6 style="color: var(--accent); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Tenant Information</h6></div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="first_name" id="edit_first_name" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="last_name" id="edit_last_name" required>
+                        </div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Email <i class="fas fa-lock ms-1 text-muted" style="font-size: 0.8rem;"></i></label>
+                            <input type="email" class="form-control" name="email" id="edit_email" readonly style="background-color: rgba(0, 0, 0, 0.2); color: var(--text-secondary); cursor: not-allowed; border-color: var(--border);">
+                        </div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Mobile Number</label>
+                            <input type="tel" class="form-control" name="phone" id="edit_phone">
+                        </div>
+
+                        <div class="col-12 mt-3 mt-md-4"><h6 style="color: var(--accent); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Login Credentials</h6></div>
+                        
+                        <div class="col-12">
+                            <label class="form-label">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="username" id="edit_username" required>
+                        </div>
+                        
+                        <div class="col-12 mt-3 mt-md-4"><h6 style="color: var(--accent); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Lease Details</h6></div>
+
+                        <div class="col-12">
+                            <label class="form-label">Assign Flat <span class="text-danger">*</span></label>
+                            <select class="form-select" name="flat" id="edit_flat" required>
+                                {% for flat in my_flats %}
+                                <option value="{{ flat.id }}">{{ flat.society.name }} - Flat {{ flat.flat_number }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Monthly Rent (₹) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="rent_amount" id="edit_rent_amount" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Lease Start Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="start_date" id="edit_start_date" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border: 1px solid var(--border); color: var(--text-secondary);">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleStatus(id, action) {
+    if(confirm('Are you sure you want to ' + action + ' this tenant account?')) {
+        window.location.href = `/owner/tenant/${id}/toggle-status/`;
+    }
+}
+
+function deleteTenant(id) {
+    if(confirm('Are you sure you want to permanently delete this tenant? This cannot be undone.')) {
+        document.getElementById('delete-form-' + id).submit();
+    }
+}
+
+function openEditModal(button) {
+    // 1. Get data from the button's data attributes
+    const id = button.getAttribute('data-id');
+    const firstName = button.getAttribute('data-first-name');
+    const lastName = button.getAttribute('data-last-name');
+    const email = button.getAttribute('data-email');
+    const phone = button.getAttribute('data-phone');
+    const username = button.getAttribute('data-username');
+    const flatId = button.getAttribute('data-flat-id');
+    const rent = button.getAttribute('data-rent');
+    const startDate = button.getAttribute('data-start-date');
+
+    // 2. Populate the Modal Inputs
+    document.getElementById('edit_first_name').value = firstName;
+    document.getElementById('edit_last_name').value = lastName;
+    document.getElementById('edit_email').value = email;
+    document.getElementById('edit_phone').value = phone;
+    document.getElementById('edit_username').value = username;
+    document.getElementById('edit_flat').value = flatId;
+    document.getElementById('edit_rent_amount').value = rent;
+    document.getElementById('edit_start_date').value = startDate;
+
+    // 3. Set the form action dynamically
+    const form = document.getElementById('editTenantForm');
+    form.action = `/owner/tenant/${id}/update/`;
+
+    // 4. Show the modal
+    const editModal = new bootstrap.Modal(document.getElementById('editTenantModal'));
+    editModal.show();
+}
+</script>
+{% endblock %}

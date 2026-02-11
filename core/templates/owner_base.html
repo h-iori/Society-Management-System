@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+    {% url 'core:owner_dashboard' as dash_url %}
+    {% url 'core:owner_flats' as flats_url %}
+    {% url 'core:tenant_list' as tenant_url %}
+    {% url 'core:owner_bills' as bills_url %}
+
+    <a href="{{ dash_url }}" class="menu-item {% if request.path == dash_url %}active{% endif %}">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+    </a>
+
+    <a href="{{ flats_url }}" class="menu-item {% if flats_url in request.path %}active{% endif %}">
+        <i class="fas fa-home"></i>
+        <span>My Flats</span>
+    </a>
+
+    <a href="{{ tenant_url }}" class="menu-item {% if tenant_url in request.path %}active{% endif %}">
+        <i class="fas fa-users"></i>
+        <span>My Tenants</span>
+    </a>
+
+    <a href="{{ bills_url }}" class="menu-item {% if bills_url in request.path %}active{% endif %}">
+        <i class="fas fa-file-invoice-dollar"></i>
+        <span>My Bills</span>
+    </a>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
+
+    // --- 1. CONFIGURATION (Tailored for Owner Portal) ---
+    const PATTERNS = {
+        phone: {
+            // Removes non-digits, cuts at 10 chars
+            mask: (val) => val.replace(/\D/g, '').slice(0, 10),
+            validate: (val) => val.length === 10,
+            msg: 'Mobile number must be exactly 10 digits'
+        },
+        money: {
+            // Allows digits and one decimal point for Rent
+            mask: (val) => {
+                let clean = val.replace(/[^0-9.]/g, ''); 
+                if ((clean.match(/\./g) || []).length > 1) {
+                    clean = clean.slice(0, -1);
+                }
+                return clean;
+            },
+            validate: (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0,
+            msg: 'Please enter a valid rent amount'
+        },
+        names: {
+            // Blocks numbers/symbols in names (optional, but good for "First/Last Name")
+            mask: (val) => val.replace(/[^a-zA-Z\s]/g, ''),
+            validate: (val) => val.trim().length >= 2,
+            msg: 'Name must be at least 2 characters'
+        },
+        email: {
+            mask: (val) => val, // No masking for email
+            validate: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
+            msg: 'Invalid email format'
+        }
+    };
+
+    // --- 2. HELPER: Set Visual Status ---
+    function setStatus(input, isValid, msg) {
+        // Find or create feedback div
+        let feedback = input.nextElementSibling;
+        if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+            feedback = document.createElement('div');
+            feedback.className = 'invalid-feedback';
+            input.parentNode.insertBefore(feedback, input.nextSibling);
+        }
+
+        input.classList.remove('is-valid', 'is-invalid');
+
+        if (isValid) {
+            input.classList.add('is-valid');
+            feedback.textContent = '';
+        } else {
+            input.classList.add('is-invalid');
+            feedback.textContent = msg;
+        }
+    }
+
+    // --- 3. MAIN LOGIC ---
+    function attachValidators() {
+        // Select all inputs in modals or forms
+        const inputs = document.querySelectorAll('input, select');
+
+        inputs.forEach(input => {
+            if (input.dataset.validationAttached) return;
+            input.dataset.validationAttached = "true";
+
+            input.addEventListener('input', function() {
+                const name = this.name;
+                const type = this.type;
+                let val = this.value;
+
+                // --- STAGE 1: REAL-TIME MASKING (Prevent invalid keystrokes) ---
+
+                // 1. Phone Logic
+                if (name === 'phone' || name.includes('mobile')) {
+                    const cleanVal = PATTERNS.phone.mask(val);
+                    if (val !== cleanVal) {
+                        this.value = cleanVal;
+                        val = cleanVal;
+                    }
+                }
+                // 2. Money/Rent Logic
+                else if (name === 'rent_amount' || name === 'amount') {
+                    const cleanVal = PATTERNS.money.mask(val);
+                    if (val !== cleanVal) {
+                        this.value = cleanVal;
+                        val = cleanVal;
+                    }
+                }
+                // 3. Name Logic (First/Last Name)
+                else if (name === 'first_name' || name === 'last_name') {
+                    // Optional: Remove this block if you want to allow numbers in names
+                    const cleanVal = PATTERNS.names.mask(val);
+                    if (val !== cleanVal) {
+                        this.value = cleanVal;
+                        val = cleanVal;
+                    }
+                }
+
+                // --- STAGE 2: VALIDATION CHECKS ---
+                
+                // If empty and not required, clear status
+                if (val.length === 0 && !this.hasAttribute('required')) {
+                    this.classList.remove('is-valid', 'is-invalid');
+                    return;
+                }
+
+                let isValid = true;
+                let msg = '';
+
+                if (name === 'phone' || name.includes('mobile')) {
+                    isValid = PATTERNS.phone.validate(val);
+                    msg = PATTERNS.phone.msg;
+                } 
+                else if (name === 'rent_amount' || name === 'amount') {
+                    isValid = PATTERNS.money.validate(val);
+                    msg = PATTERNS.money.msg;
+                }
+                else if (type === 'email') {
+                    isValid = PATTERNS.email.validate(val);
+                    msg = PATTERNS.email.msg;
+                }
+                // General Required Field Check
+                else if (this.hasAttribute('required') && val.trim() === '') {
+                    isValid = false;
+                    msg = 'This field is required';
+                }
+
+                setStatus(this, isValid, msg);
+            });
+        });
+    }
+
+    // --- INITIALIZATION ---
+    attachValidators();
+
+    // Re-attach when Modals open (Bootstrap clears/re-renders DOM elements sometimes)
+    document.body.addEventListener('shown.bs.modal', function () {
+        attachValidators();
+    });
+});
+</script>
+{% endblock %}

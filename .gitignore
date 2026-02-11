@@ -1,0 +1,14 @@
+# Python cache
+__pycache__/
+
+# Environments
+env/
+
+# Database
+db.sqlite3
+
+# Security/Secrets
+.env
+
+# Collected static files for deployment
+staticfiles/

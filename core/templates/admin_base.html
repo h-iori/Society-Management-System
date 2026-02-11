@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+    {% url 'core:admin_dashboard' as dashboard_url %}
+    {% url 'core:owner_list' as owner_url %}
+    {% url 'core:society_list' as society_url %}
+    {% url 'core:flat_list' as flat_url %}
+    {% url 'core:bill_list' as bill_url %}
+    
+    <a href="{{ dashboard_url }}" class="menu-item {% if request.path == dashboard_url %}active{% endif %}">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+    </a>
+
+    <a href="{{ owner_url }}" class="menu-item {% if owner_url in request.path %}active{% endif %}">
+        <i class="fas fa-users"></i>
+        <span>Owners</span>
+    </a>
+
+    <a href="{{ society_url }}" class="menu-item {% if society_url in request.path %}active{% endif %}">
+        <i class="fas fa-building"></i>
+        <span>Societies</span>
+    </a>
+
+    <a href="{{ flat_url }}" class="menu-item {% if flat_url in request.path %}active{% endif %}">
+        <i class="fas fa-home"></i>
+        <span>Flats</span>
+    </a>
+
+    <a href="{{ bill_url }}" class="menu-item {% if bill_url in request.path %}active{% endif %}">
+        <i class="fas fa-file-invoice-dollar"></i>
+        <span>Bills</span>
+    </a>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
+    // --- 1. CONFIGURATION ---
+    const PATTERNS = {
+        phone: {
+            mask: (val) => val.replace(/\D/g, '').slice(0, 10), // Remove non-digits, cut to 10
+            validate: (val) => val.length === 10, // Must be exactly 10
+            msg: 'Phone number must be exactly 10 digits'
+        },
+        year: {
+            mask: (val) => val.replace(/\D/g, '').slice(0, 4), // Remove non-digits, cut to 4
+            validate: (val) => val.length === 4 && parseInt(val) >= 2000 && parseInt(val) <= 2099,
+            msg: 'Enter a valid year (2000-2099)'
+        },
+        amount: {
+            mask: (val) => val.replace(/[^0-9.]/g, ''), // Allow digits and dots only
+            validate: (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0,
+            msg: 'Enter a valid positive amount'
+        },
+        email: {
+            mask: (val) => val, // No masking for email (too complex to mask realtime)
+            validate: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
+            msg: 'Invalid email address format'
+        }
+    };
+
+    // --- 2. HELPERS ---
+    function setStatus(input, isValid, msg) {
+        input.classList.remove('is-valid', 'is-invalid');
+        
+        // Find or create feedback div
+        let feedback = input.nextElementSibling;
+        if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+            feedback = document.createElement('div');
+            feedback.className = 'invalid-feedback';
+            input.parentNode.insertBefore(feedback, input.nextSibling);
+        }
+
+        if (isValid) {
+            input.classList.add('is-valid');
+            feedback.textContent = ''; // Clear error
+        } else {
+            input.classList.add('is-invalid');
+            feedback.textContent = msg;
+        }
+    }
+
+    // --- 3. MAIN LOGIC ---
+    function attachValidators() {
+        const inputs = document.querySelectorAll('input, select, textarea');
+
+        inputs.forEach(input => {
+            // Avoid attaching duplicate listeners
+            if (input.dataset.validationAttached) return;
+            input.dataset.validationAttached = "true";
+
+            input.addEventListener('input', function(e) {
+                const name = this.name;
+                const type = this.type;
+                let val = this.value;
+
+                // --- STAGE 1: INPUT MASKING (Prevent bad chars) ---
+                
+                // Phone Masking
+                if (name === 'phone') {
+                    const cleanVal = PATTERNS.phone.mask(val);
+                    if (val !== cleanVal) {
+                        this.value = cleanVal; // Update field immediately
+                        val = cleanVal;       // Update local var for validation
+                    }
+                }
+                
+                // Year Masking
+                else if (name === 'year') {
+                    const cleanVal = PATTERNS.year.mask(val);
+                    if (val !== cleanVal) {
+                        this.value = cleanVal;
+                        val = cleanVal;
+                    }
+                }
+
+                // Amount Masking
+                else if (name === 'amount' || type === 'number') {
+                    // Prevent more than one decimal point
+                    if ((val.match(/\./g) || []).length > 1) {
+                         val = val.slice(0, -1);
+                         this.value = val;
+                    }
+                }
+
+                // --- STAGE 2: VISUAL VALIDATION (Red/Green) ---
+                
+                // Skip validation if empty (unless required)
+                if (val.length === 0) {
+                    this.classList.remove('is-valid', 'is-invalid');
+                    return; 
+                }
+
+                let isValid = true;
+                let msg = '';
+
+                if (name === 'phone') {
+                    isValid = PATTERNS.phone.validate(val);
+                    msg = PATTERNS.phone.msg;
+                } else if (name === 'year') {
+                    isValid = PATTERNS.year.validate(val);
+                    msg = PATTERNS.year.msg;
+                } else if (type === 'email') {
+                    isValid = PATTERNS.email.validate(val);
+                    msg = PATTERNS.email.msg;
+                } else if (this.hasAttribute('required') && val.trim() === '') {
+                    isValid = false;
+                    msg = 'This field is required';
+                }
+
+                setStatus(this, isValid, msg);
+            });
+        });
+    }
+
+    // Run on load
+    attachValidators();
+
+    // Re-run if Modals are opened (Bootstrap sometimes resets/clones forms)
+    document.body.addEventListener('shown.bs.modal', function () {
+        attachValidators();
+    });
+});
+</script>
+{% endblock %}

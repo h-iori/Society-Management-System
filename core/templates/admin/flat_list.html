@@ -1,0 +1,192 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Flats Management | Society Management{% endblock %}
+{% block page_title %}FLATS MANAGEMENT{% endblock %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 mb-md-4 gap-3 fade-in">
+    <div>
+        <h4 style="font-weight: 700; margin: 0;">Residential Units</h4>
+        <div style="color: var(--text-secondary); font-size: 0.9rem;">Manage flats and owner assignments</div>
+    </div>
+    <button class="btn btn-primary w-100 w-md-auto" data-bs-toggle="modal" data-bs-target="#createFlatModal">
+        <i class="fas fa-plus me-2"></i>ADD NEW FLAT
+    </button>
+</div>
+
+<div class="card fade-in" style="overflow: hidden; border-radius: 12px;">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Unit Details</th>
+                    <th>Society / Building</th>
+                    <th>Current Resident</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for flat in flats %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div style="width: 40px; height: 40px; background: rgba(0, 212, 255, 0.1); color: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 1rem; flex-shrink: 0;">
+                                <i class="fas fa-door-closed"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 1rem;">{{ flat.flat_number }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">ID: #{{ flat.id }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span style="font-weight: 500;">{{ flat.society.name }}</span></td>
+                    <td>
+                        {% if flat.owner %}
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-circle me-2 text-secondary"></i>
+                                <span>{{ flat.owner.get_full_name }}</span>
+                            </div>
+                        {% else %}
+                            <span style="color: var(--text-secondary); font-style: italic;">-- Unassigned --</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if flat.owner %}
+                            <span class="badge badge-soft-success rounded-pill"><i class="fas fa-check-circle me-1"></i>OCCUPIED</span>
+                        {% else %}
+                            <span class="badge badge-soft-warning rounded-pill"><i class="fas fa-exclamation-circle me-1"></i>VACANT</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <button class="action-btn" 
+                                onclick="openEditFlatModal('{{ flat.id }}', '{{ flat.society.id }}', '{{ flat.flat_number|escapejs }}', '{{ flat.owner.id|default:'' }}')"
+                                title="Edit Flat">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <button class="action-btn btn-delete" onclick="deleteFlat('{{ flat.id }}')" title="Delete Flat">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <i class="fas fa-home mb-3" style="font-size: 2rem; color: var(--border);"></i>
+                        <div style="color: var(--text-secondary);">No flats found in the system.</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="createFlatModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-home me-2 text-info"></i>Register New Flat</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'core:create_flat' %}">
+                {% csrf_token %}
+                <div class="modal-body p-3 p-md-4">
+                    <div class="mb-3">
+                        <label class="form-label text-secondary text-uppercase fs-7">Select Society <span class="text-danger">*</span></label>
+                        <select class="form-select" name="society" required>
+                            <option value="">-- Choose Society --</option>
+                            {% for society in societies %}
+                            <option value="{{ society.id }}">{{ society.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary text-uppercase fs-7">Flat Number <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="flat_number" placeholder="e.g. A-101, B-502" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary text-uppercase fs-7">Assign Owner (Optional)</label>
+                        <select class="form-select" name="owner">
+                            <option value="">-- Vacant --</option>
+                            {% for owner in owners %}
+                            <option value="{{ owner.id }}">{{ owner.get_full_name }} ({{ owner.username }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-color: var(--border); color: var(--text-secondary);">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4">Create Flat</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editFlatModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-pencil-alt me-2 text-info"></i>Edit Flat Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id="editFlatForm">
+                {% csrf_token %}
+                <div class="modal-body p-3 p-md-4">
+                    <div class="mb-3">
+                        <label class="form-label text-secondary text-uppercase fs-7">Select Society <span class="text-danger">*</span></label>
+                        <select class="form-select" name="society" id="edit_flat_society" required>
+                            {% for society in societies %}
+                            <option value="{{ society.id }}">{{ society.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary text-uppercase fs-7">Flat Number <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="flat_number" id="edit_flat_number" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary text-uppercase fs-7">Assign Owner</label>
+                        <select class="form-select" name="owner" id="edit_flat_owner">
+                            <option value="">-- Vacant --</option>
+                            {% for owner in owners %}
+                            <option value="{{ owner.id }}">{{ owner.get_full_name }} ({{ owner.username }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-color: var(--border); color: var(--text-secondary);">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4">Update Flat</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openEditFlatModal(id, societyId, flatNumber, ownerId) {
+        document.getElementById('edit_flat_society').value = societyId;
+        document.getElementById('edit_flat_number').value = flatNumber;
+        document.getElementById('edit_flat_owner').value = ownerId || "";
+        
+        const form = document.getElementById('editFlatForm');
+        form.action = `/admin/flat/${id}/update/`;
+        
+        var editModal = new bootstrap.Modal(document.getElementById('editFlatModal'));
+        editModal.show();
+    }
+
+    function deleteFlat(id) {
+        if(confirm('Are you sure you want to delete this flat?')) {
+            window.location.href = `/admin/flat/${id}/delete/`;
+        }
+    }
+</script>
+{% endblock %}

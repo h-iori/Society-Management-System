@@ -1,0 +1,386 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Society Management System{% endblock %}
+
+{% block body_content %}
+<style>
+    .login-wrapper {
+        min-height: 100vh;
+        min-height: 100dvh; /* Mobile friendly */
+        display: flex;
+        background: var(--primary);
+        width: 100%;
+        overflow-x: hidden;
+    }
+    
+    .login-left {
+        flex: 1;
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 227, 150, 0.1) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        padding: 2rem;
+    }
+    
+    .login-left::before {
+        content: '';
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        border: 1px solid var(--border);
+        animation: rotate 20s linear infinite;
+        border-radius: 50%; /* Ensure it's circular */
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .login-brand {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+    }
+    
+    .login-brand h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .login-brand .gradient-text {
+        background: linear-gradient(135deg, var(--accent) 0%, var(--success) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .login-right {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        position: relative;
+    }
+    
+    .login-form-container {
+        width: 100%;
+        max-width: 450px;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        padding: 3rem;
+        border-radius: 12px; /* Soften edges */
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .login-header {
+        margin-bottom: 2.5rem;
+    }
+    
+    .login-header h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+    
+    .login-header p {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .input-group-custom {
+        position: relative;
+    }
+    
+    .input-group-custom i {
+        position: absolute;
+        left: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        transition: color 0.3s ease;
+        z-index: 10;
+        pointer-events: none;
+    }
+    
+    .input-group-custom input {
+        padding-left: 3.5rem;
+        border: 1px solid var(--border);
+        height: 50px; /* Taller inputs for touch */
+    }
+
+    /* Validation Styles */
+    .is-invalid {
+        border-color: #ff4757 !important;
+    }
+    
+    .error-feedback {
+        color: #ff4757;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: none;
+        font-weight: 500;
+    }
+    
+    .login-btn {
+        width: 100%;
+        padding: 1rem;
+        margin-top: 1rem;
+        transition: all 0.3s ease;
+        height: 50px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .alert-container {
+        margin-bottom: 1.5rem;
+    }
+
+    /* --- Responsiveness --- */
+    
+    @media (max-width: 992px) {
+        .login-wrapper {
+            flex-direction: column;
+        }
+
+        .login-left {
+            flex: 0 0 auto;
+            padding: 3rem 1.5rem;
+            min-height: 250px;
+        }
+
+        .login-left::before {
+            width: 300px;
+            height: 300px;
+            /* Center the circle nicely behind content */
+        }
+
+        .login-brand i {
+            font-size: 3.5rem !important;
+        }
+
+        .login-brand h1 {
+            font-size: 2rem;
+        }
+
+        .login-right {
+            flex: 1;
+            padding: 1.5rem;
+            align-items: flex-start; /* Align to top on mobile for better keyboard handling */
+            padding-top: 2rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .login-left {
+            padding: 2rem 1rem;
+            min-height: 200px;
+        }
+
+        .login-brand h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-brand p {
+            font-size: 0.9rem;
+        }
+
+        .login-brand i {
+            font-size: 2.5rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+        
+        /* Hide complex animation on very small screens to save space */
+        .login-left::before {
+            opacity: 0.05;
+        }
+
+        .login-form-container {
+            padding: 1.5rem;
+            border: none;
+            background: transparent;
+            box-shadow: none;
+        }
+        
+        .login-right {
+            padding: 0 1rem;
+            background: var(--card-bg); /* Make the whole bottom section the card bg */
+        }
+
+        .login-header h2 {
+            font-size: 1.75rem;
+        }
+    }
+</style>
+
+<div class="login-wrapper">
+    <div class="login-left">
+        <div class="login-brand">
+            <i class="fas fa-building" style="font-size: 5rem; color: var(--accent); margin-bottom: 1rem;"></i>
+            <h1>
+                <span class="gradient-text">SOCIETY</span><br>
+                MANAGEMENT
+            </h1>
+            <p class="text-secondary">Enterprise Property Management Portal</p>
+        </div>
+    </div>
+    
+    <div class="login-right">
+        <div class="login-form-container">
+            <div class="login-header">
+                <h2>SIGN IN</h2>
+                <p>Enter your credentials to access your account</p>
+            </div>
+
+            {% if messages %}
+            <div class="alert-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" 
+                     style="background: rgba(255, 71, 87, 0.1); border: 1px solid #ff4757; color: #ff4757; font-size: 0.85rem; border-radius: 0;">
+                    <i class="fas fa-exclamation-circle me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="POST" action="{% url 'core:login' %}" id="loginForm" novalidate>
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label">EMAIL OR USERNAME</label>
+                    <div class="input-group-custom">
+                        <i class="fas fa-user"></i>
+                        <input type="text" 
+                               id="emailInput"
+                               class="form-control" 
+                               name="email" 
+                               required 
+                               autofocus
+                               placeholder="your.email@example.com"
+                               autocomplete="username">
+                    </div>
+                    <div id="emailError" class="error-feedback">Invalid characters detected. Spaces are not allowed.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">PASSWORD</label>
+                    <div class="input-group-custom">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" 
+                               id="passwordInput"
+                               class="form-control" 
+                               name="password" 
+                               required
+                               placeholder="••••••••"
+                               autocomplete="current-password">
+                    </div>
+                    <div id="passwordError" class="error-feedback">Password is required.</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary login-btn" id="submitBtn">
+                    <i class="fas fa-sign-in-alt me-2"></i>ACCESS SYSTEM
+                </button>
+            </form>
+            
+            <div class="text-center mt-4">
+                <small class="text-secondary">
+                    <i class="fas fa-lock me-1"></i>Secured with enterprise-grade encryption
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const emailError = document.getElementById('emailError');
+    const passwordError = document.getElementById('passwordError');
+
+    // Real-time Input Validation: Disallow Spaces for Username/Email
+    emailInput.addEventListener('keypress', function(e) {
+        if (e.which === 32) {
+            e.preventDefault();
+            showError(emailInput, emailError, "Spaces are not allowed in username/email.");
+        }
+    });
+
+    emailInput.addEventListener('input', function() {
+        if (this.value.includes(' ')) {
+            this.value = this.value.replace(/\s/g, '');
+        }
+        clearError(emailInput, emailError);
+    });
+
+    passwordInput.addEventListener('input', function() {
+        if (this.value.length > 0) {
+            clearError(passwordInput, passwordError);
+        }
+    });
+
+    // Form Submission Validation
+    loginForm.addEventListener('submit', function(e) {
+        let isValid = true;
+
+        if (!emailInput.value.trim()) {
+            showError(emailInput, emailError, "Please enter your email or username.");
+            isValid = false;
+        }
+
+        if (!passwordInput.value) {
+            showError(passwordInput, passwordError, "Please enter your password.");
+            isValid = false;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            // Subtle shake effect on the container
+            const container = document.querySelector('.login-form-container');
+            container.style.animation = 'none';
+            void container.offsetWidth; // trigger reflow
+            container.style.animation = 'shake 0.4s ease-in-out';
+        } else {
+            // Change button state to "Processing"
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>AUTHENTICATING...';
+        }
+    });
+
+    function showError(input, errorDiv, message) {
+        input.classList.add('is-invalid');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        input.closest('.input-group-custom').querySelector('i').style.color = '#ff4757';
+    }
+
+    function clearError(input, errorDiv) {
+        input.classList.remove('is-invalid');
+        errorDiv.style.display = 'none';
+        input.closest('.input-group-custom').querySelector('i').style.color = '';
+    }
+});
+</script>
+
+<style>
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    50% { transform: translateX(8px); }
+    75% { transform: translateX(-8px); }
+}
+</style>
+{% endblock %}

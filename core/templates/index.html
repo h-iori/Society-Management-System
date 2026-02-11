@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome - Society Management System{% endblock %}
+
+{% block body_content %}
+<style>
+    .hero-section {
+        min-height: 100vh;
+        /* improved for mobile browsers */
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #1a1d29 0%, #2d3142 100%);
+        padding: 6rem 0; /* Added padding to prevent content touching edges on short screens */
+    }
+    
+    .hero-grid {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(var(--border) 1px, transparent 1px),
+            linear-gradient(90deg, var(--border) 1px, transparent 1px);
+        background-size: 50px 50px;
+        opacity: 0.1;
+        animation: gridMove 20s linear infinite;
+    }
+    
+    @keyframes gridMove {
+        0% { transform: translateX(0) translateY(0); }
+        100% { transform: translateX(50px) translateY(50px); }
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    .hero-title {
+        font-size: 5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        line-height: 1.1;
+        animation: fadeInUp 1s ease;
+    }
+    
+    .hero-title .gradient-text {
+        background: linear-gradient(135deg, var(--accent) 0%, var(--success) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.5rem;
+        color: var(--text-secondary);
+        margin-bottom: 3rem;
+        animation: fadeInUp 1s ease 0.2s both;
+    }
+    
+    .hero-btn {
+        padding: 1.25rem 3rem;
+        font-size: 1.125rem;
+        animation: fadeInUp 1s ease 0.4s both;
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .hero-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .hero-btn:hover::before {
+        left: 100%;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .feature-section {
+        padding: 5rem 0;
+        background: var(--secondary);
+        border-top: 1px solid var(--border);
+    }
+    
+    .feature-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        padding: 2.5rem;
+        height: 100%;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px; /* Added slight radius */
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent), var(--success));
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .feature-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(0, 212, 255, 0.1);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        font-size: 2.5rem;
+        color: var(--accent);
+        border-radius: 12px;
+    }
+    
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+    
+    .feature-text {
+        color: var(--text-secondary);
+        line-height: 1.7;
+    }
+
+    /* --- Responsiveness --- */
+
+    @media (max-width: 992px) {
+        .hero-title {
+            font-size: 3.5rem;
+        }
+        .hero-subtitle {
+            font-size: 1.25rem;
+        }
+        .feature-card {
+            padding: 2rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 2.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+        
+        .feature-section {
+            padding: 3rem 0;
+        }
+        
+        .feature-card {
+            margin-bottom: 1rem;
+            transform: none !important; /* Disable hover float on touch devices */
+        }
+        
+        .feature-card:hover {
+            box-shadow: none;
+            border-color: var(--border);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-title {
+            font-size: 2.25rem;
+        }
+        
+        .hero-btn {
+            width: 100%; /* Full width button on mobile */
+            padding: 1rem;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.75rem;
+        }
+        
+        .feature-title {
+            font-size: 1.25rem;
+        }
+    }
+</style>
+
+<div class="hero-section">
+    <div class="hero-grid"></div>
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="gradient-text">SOCIETY</span><br>
+                MANAGEMENT SYSTEM
+            </h1>
+            <p class="hero-subtitle">
+                Enterprise-grade platform for seamless property management
+            </p>
+            <a href="{% url 'core:login' %}" class="btn btn-primary hero-btn">
+                <i class="fas fa-sign-in-alt me-2"></i>ACCESS PORTAL
+            </a>
+        </div>
+    </div>
+</div>
+
+<section class="feature-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-white mb-3">CORE CAPABILITIES</h2>
+            <p class="text-secondary">Built for modern property management professionals</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4 col-12">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">SECURE ACCESS</h3>
+                    <p class="feature-text">
+                        Role-based authentication with enterprise-grade security protocols for administrators, owners, and tenants.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 col-12">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="feature-title">ANALYTICS DASHBOARD</h3>
+                    <p class="feature-text">
+                        Real-time insights and comprehensive reporting for data-driven decision making and operational efficiency.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 col-12">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="feature-title">AUTOMATED WORKFLOWS</h3>
+                    <p class="feature-text">
+                        Streamlined processes for billing, tenant management, and property administration with minimal manual intervention.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
