@@ -41,7 +41,11 @@ class User(AbstractUser):
         if self.role in [self.OWNER, self.TENANT]:
             if not self.first_name or not self.last_name:
                 raise ValidationError('First name and last name are required for Owners and Tenants')
-
+    def save(self, *args, **kwargs):
+    # ensure any superuser always has ADMIN role
+        if self.is_superuser:
+            self.role = self.ADMIN
+        super().save(*args, **kwargs)
 
 class Society(models.Model):
     name = models.CharField(max_length=200,
