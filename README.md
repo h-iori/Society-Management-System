@@ -44,6 +44,7 @@ This project demonstrates proficiency in Django fundamentals, including models, 
 - Responsive UI using Django templates with basic HTML/CSS.
 - No self-registration for Owners; only Admins can create them.
 - No payment gateway integration.
+- Custom 404 page.
 
 ## Technology Stack
 
