@@ -20,8 +20,8 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15,blank=True, null=True,
         validators=[
             RegexValidator(
-                regex=r'^\+?1?\d{9,15}$',
-                message='Enter a valid phone number (9-15 digits)'
+                regex=r'^\d{10}$',
+                message='Phone number must be exactly 10 digits'
             )
         ]
     )
